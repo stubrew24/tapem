@@ -10,7 +10,8 @@ const initialState = {
   playing: false,
   gameStarted: false,
   gameOver: false,
-  score: 0
+  score: 0,
+  time: 300
 };
 
 const reducer = (state, action) => {
@@ -26,13 +27,16 @@ const reducer = (state, action) => {
     case "colorClick":
       const actual = [...state.userPattern, action.payload];
       const expected = state.pattern.slice(0, actual.length);
+      let time;
+      if (state.time >= 150) time = state.time - 10;
       if (arrayCompare(actual, expected)) {
         if (actual.length === state.pattern.length)
           return {
             ...state,
             score: actual.length,
             playing: true,
-            pattern: [...state.pattern, randomColor()]
+            pattern: [...state.pattern, randomColor()],
+            time
           };
         return {
           ...state,
@@ -106,9 +110,9 @@ const Board = () => {
       const timer = setTimeout(() => {
         setTimeout(() => {
           dispatch({ type: "lightUp" });
-        }, 300);
+        }, state.time);
         dispatch({ type: "lightOff" });
-      }, 350);
+      }, state.time * 1.15);
       return () => clearTimeout(timer);
     }
   }, [state, state.playing, state.gameOver]);
@@ -127,7 +131,7 @@ const Board = () => {
     <>
       <h1 style={style.titles}>TAP 'EM</h1>
       <h2 style={style.titles}> &nbsp; {state.gameOver && "Game Over!"} </h2>
-      <h2 style={style.titles}>Score: {state.score}</h2>
+      <h3 style={style.titles}>Score: {state.score}</h3>
       <div style={style.board}>
         {colors.map(color => (
           <Button
@@ -147,3 +151,11 @@ const Board = () => {
 };
 
 export default Board;
+
+// TODOS
+
+// [ ] Refactor Code, Reducer, actiosn, etc
+// [X] Speed up after x time
+// [ ] iPhone 5 layout
+// [ ] tap/click color actions
+// [ ] Firebase/node/graphql backend?
