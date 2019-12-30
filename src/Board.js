@@ -1,85 +1,7 @@
 import React, { useReducer, useEffect } from "react";
 import { colors } from "./Constants";
 import Button from "./Button";
-
-const initialState = {
-  pattern: [],
-  userPattern: [],
-  current: null,
-  count: 0,
-  playing: false,
-  gameStarted: false,
-  gameOver: false,
-  score: 0,
-  time: 300
-};
-
-const reducer = (state, action) => {
-  switch (action.type) {
-    case "startGame":
-      return {
-        ...initialState,
-        playing: true,
-        gameStarted: true,
-        pattern: [randomColor()]
-      };
-
-    case "colorClick":
-      const actual = [...state.userPattern, action.payload];
-      const expected = state.pattern.slice(0, actual.length);
-      let time;
-      if (state.time >= 150) time = state.time - 10;
-      if (arrayCompare(actual, expected)) {
-        if (actual.length === state.pattern.length)
-          return {
-            ...state,
-            score: actual.length,
-            playing: true,
-            pattern: [...state.pattern, randomColor()],
-            time
-          };
-        return {
-          ...state,
-          userPattern: actual
-        };
-      } else {
-        return { ...state, gameOver: true, gameStarted: false };
-      }
-
-    case "lightUp":
-      if (state.count < state.pattern.length) {
-        return {
-          ...state,
-          current: state.pattern[state.count],
-          count: state.count + 1
-        };
-      } else {
-        return {
-          ...state,
-          current: null,
-          count: 0,
-          playing: false,
-          userPattern: []
-        };
-      }
-    case "lightOff":
-      return { ...state, current: null };
-    default:
-      return state;
-  }
-};
-
-const randomColor = () => {
-  return colors[Math.floor(Math.random() * colors.length)].id;
-};
-
-const arrayCompare = (a, b) => {
-  if (a.length !== b.length) return false;
-  for (let i = 0; i < a.length; i++) {
-    if (a[i] !== b[i]) return false;
-  }
-  return true;
-};
+import { reducer, initialState } from "./reducer";
 
 const Board = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
@@ -109,6 +31,7 @@ const Board = () => {
     if (state.playing && !state.gameOver) {
       const timer = setTimeout(() => {
         setTimeout(() => {
+          // window.navigator.vibrate(100);
           dispatch({ type: "lightUp" });
         }, state.time);
         dispatch({ type: "lightOff" });
@@ -119,6 +42,8 @@ const Board = () => {
 
   const handleClick = id => {
     if (!state.gameStarted || state.playing) return;
+    window.navigator.vibrate(30);
+
     dispatch({ type: "colorClick", payload: id });
     console.log("testing");
   };
